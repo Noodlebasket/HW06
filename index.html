@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8" />
+    <title>Gif Search</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" type="text/css" media="screen" href="assets/style/style.css" />
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+</head>
+
+<body>
+
+    <div class="container">
+        <div class="gif-buttons">
+            <form id="gif-form">
+                <input type="text" class="gif-input">
+                <input class="add-gif" type="submit" value="Add a Giphy search button!">
+            </form>
+        </div>
+        <div class="gif-view">
+
+        </div>
+    </div>
+
+    <script type="text/javascript">
+
+        $(document).ready(function () {
+
+            var gifList = ["hamster", "puppy", "kitten", "dolphin"];
+
+            function renderButtons() {
+
+                $(".gif-buttons").empty();
+
+                for (var i = 0; i < gifList.length; i++) {
+
+                    var a = $("<button>");
+
+                    a.addClass("gif");
+
+                    a.attr("data-name", gifList[i]);
+
+                    a.text(gifList[i]);
+
+                    $(".gif-buttons").append(a);
+                }
+            }
+
+            $(".add-gif").on("click", function (event) {
+                event.preventDefault();
+
+                var gifAdd = $(".add-gif").val().trim();
+
+                gifList.push(gifAdd);
+
+                renderButtons();
+            });
+
+            $(".gif").on("click", function () {
+
+                var search = $(this).attr("data-search");
+                var queryURL = "https://api.giphy.com/v1/gifs/search?q=" + search + "&api_key=dc6zaTOxFJmzC&limit=10";
+
+                $.ajax({
+                    url: queryURL,
+                    method: "GET"
+                })
+                    .then(function (response) {
+                        var results = response.data;
+
+                        for (var i = 0; i < results.length; i++) {
+                            var gifDiv = $(".gif-view");
+
+                            var gifImage = $("<img>");
+                            gifImage.attr("src", results[i].images.fixed_height.url);
+
+                            gifDiv.prepend(gifImage);
+
+                            $("#gif-view").prepend(gifDiv);
+                        }
+                    });
+            });
+        });
+    </script>
+</body>
+
+</html>
