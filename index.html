@@ -13,11 +13,12 @@
 
     <div class="container">
         <div class="gif-buttons">
-            <form id="gif-form">
-                <input type="text" class="gif-input">
-                <input class="add-gif" type="submit" value="Add a Giphy search button!">
-            </form>
+
         </div>
+        <form id="gif-form">
+            <input type="text" class="gif-input">
+            <input class="add-gif" type="submit" value="Add a Giphy search button!">
+        </form>
         <div class="gif-view">
 
         </div>
@@ -26,6 +27,7 @@
     <script type="text/javascript">
 
         $(document).ready(function () {
+
 
             var gifList = ["hamster", "puppy", "kitten", "dolphin"];
 
@@ -50,37 +52,73 @@
             $(".add-gif").on("click", function (event) {
                 event.preventDefault();
 
-                var gifAdd = $(".add-gif").val().trim();
+                var gifAdd = $(".gif-input").val().trim();
+
+                var exist = gifList.indexOf(gifAdd.toLowerCase());
+                if (exist >= 0) {
+                    alert("That button already exists.");
+                    return;
+                }
+
+                if (gifAdd === "" || gifAdd === null) return;
 
                 gifList.push(gifAdd);
 
                 renderButtons();
             });
 
-            $(".gif").on("click", function () {
+            $(".gif").on("click", function() {
 
-                var search = $(this).attr("data-search");
-                var queryURL = "https://api.giphy.com/v1/gifs/search?q=" + search + "&api_key=dc6zaTOxFJmzC&limit=10";
+                console.log("You clicked a gif button");
+
+                var search = $(this).attr("data-name");
+
+                var queryURL = "https://api.giphy.com/v1/gifs/search?q=" +
+                    search + "&api_key=dc6zaTOxFJmzC&limit=10";
 
                 $.ajax({
                     url: queryURL,
                     method: "GET"
                 })
                     .then(function (response) {
+
                         var results = response.data;
 
+                        console.log(queryURL);
+
+                        console.log(results);
+
                         for (var i = 0; i < results.length; i++) {
-                            var gifDiv = $(".gif-view");
 
-                            var gifImage = $("<img>");
-                            gifImage.attr("src", results[i].images.fixed_height.url);
+                            var animalDiv = $("<div>");
 
-                            gifDiv.prepend(gifImage);
+                            var p = $("<p>").text("Rating: " + results[i].rating);
 
-                            $("#gif-view").prepend(gifDiv);
+                            var animalImage = $("<img>");
+
+                            animalImage.attr("src", results[i].images.fixed_height.url);
+
+                            animalDiv.append(p);
+                            animalDiv.append(animalImage);
+
+                            $("#gif-view").prepend(animalDiv);
                         }
                     });
             });
+
+            $(".gif").on("click", function () {
+
+                var state = $(this).attr("data-state");
+
+                if (state === "still") {
+                    $(this).attr("src", $(this).attr("data-animate"));
+                    $(this).attr("data-state", "animate");
+                } else {
+                    $(this).attr("src", $(this).attr("data-still"));
+                    $(this).attr("data-state", "still");
+                }
+            });
+            renderButtons();
         });
     </script>
 </body>
