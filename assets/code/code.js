@@ -1,62 +1,97 @@
-<script type="text/javascript">
-    $(document).ready(function () {
+$(document).ready(function () {
 
-        gifList = ["Hamster", "Puppy", "Kitten", "Dolphin"];
 
-        function showGif() {
+    var gifList = ["hamster", "puppy", "kitten", "dolphin"];
 
-            var movie = $(this).attr("data-name");
-            var queryURL = "https://www.omdbapi.com/?t=" + movie + "&y=&plot=short&apikey=trilogy";
+    function renderButtons() {
 
-            // Creating an AJAX call for the specific movie button being clicked
-            $.ajax({
+        $(".gif-buttons").empty();
+        $(".gif-view").empty();
+
+        for (var i = 0; i < gifList.length; i++) {
+
+            var a = $("<button>");
+
+            a.addClass("gif");
+
+            a.attr("data-name", gifList[i]);
+
+            a.text(gifList[i]);
+
+            $(".gif-buttons").append(a);
+        }
+    }
+
+    $(".add-gif").on("click", function (event) {
+        event.preventDefault();
+
+        var gifAdd = $(".gif-input").val().trim();
+
+        var exist = gifList.indexOf(gifAdd.toLowerCase());
+        if (exist >= 0) {
+            alert("That button already exists.");
+            return;
+        }
+
+        if (gifAdd === "" || gifAdd === null) return;
+
+        gifList.push(gifAdd);
+
+        renderButtons();
+    });
+
+    $(document).on("click", ".gif", function () {
+
+        console.log("You clicked a gif button");
+
+        var search = $(this).attr("data-name");
+
+        var queryURL = "https://api.giphy.com/v1/gifs/search?q=" +
+            search + "&api_key=dc6zaTOxFJmzC&limit=10";
+
+        $.ajax({
             url: queryURL,
             method: "GET"
-            }).then(function (response) {
+        })
+            .then(function (response) {
 
-            // Creating a div to hold the movie
-            var movieDiv = $("<div class='movie'>");
+                var results = response.data;
 
-            // Storing the rating data
-            var rating = response.Rated;
+                console.log(queryURL);
 
-            // Creating an element to have the rating displayed
-            var pOne = $("<p>").text("Rating: " + rating);
+                console.log(results);
 
-            // Displaying the rating
-            movieDiv.append(pOne);
+                for (var i = 0; i < results.length; i++) {
 
-            // Storing the release year
-            var released = response.Released;
+                    var animalDiv = $("<div>");
 
-            // Creating an element to hold the release year
-            var pTwo = $("<p>").text("Released: " + released);
+                    var p = $("<p>").text("Rating: " + results[i].rating);
 
-            // Displaying the release year
-            movieDiv.append(pTwo);
+                    var animalImage = $("<img src='" + results[i].images.fixed_height_still.url + "'>");
+                    animalImage.addClass("gif-image")
+                    animalImage.attr("data-still", results[i].images.fixed_height_still.url);
+                    animalImage.attr("data-animate", results[i].images.fixed_height.url);
+                    animalDiv.append(p);
+                    animalDiv.append(animalImage);
 
-            // Storing the plot
-            var plot = response.Plot;
+                    $(".gif-view").prepend(animalDiv);
+                }
+            });
+            renderButtons();
+    });
 
-            // Creating an element to hold the plot
-            var pThree = $("<p>").text("Plot: " + plot);
-    
-            // Appending the plot
-            movieDiv.append(pThree);
+    $(document.body).on("click", ".gif-image", function () {
 
-            // Retrieving the URL for the image
-            var imgURL = response.Poster;
+        var state = $(this).attr("data-state");
 
-            // Creating an element to hold the image
-            var image = $("<img>").attr("src", imgURL);
-        
-            // Appending the image
-            movieDiv.append(image);
-
-            // Putting the entire movie above the previous movies
-            $("#movies-view").prepend(movieDiv);
-                });
-        
-            }
-        });
-</script>
+        if (state === "still") {
+            $(this).attr("src", $(this).attr("data-animate"));
+            $(this).attr("data-state", "animate");
+        } else {
+            $(this).attr("src", $(this).attr("data-still"));
+            $(this).attr("data-state", "still");
+        }
+        renderButtons();
+    });
+    renderButtons();
+});
